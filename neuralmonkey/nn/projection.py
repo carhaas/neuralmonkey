@@ -3,7 +3,6 @@ This module implements various types of projections.
 """
 import tensorflow as tf
 
-
 def linear(inputs, size, scope="LinearProjection"):
     """Simple linear projection
 
@@ -85,3 +84,15 @@ def multilayer_projection(input_, layer_sizes, activation=tf.nn.relu,
                 mlp_input = tf.nn.dropout(mlp_input, dropout_plc)
 
     return mlp_input
+
+
+def glu(input_, gating_fn=tf.sigmoid):
+    """Gated linear unit - Dauphin et al. (2016)
+    http://arxiv.org/abs/1612.08083
+    """
+    if input_.get_shape().as_list()[-1].value % 2 != 0:
+        raise ValueError("Input size should be an even number")
+
+    lin, nonlin = tf.split(input_, 2, axis=-1)
+
+    return lin * gating_fn(nonlin)
